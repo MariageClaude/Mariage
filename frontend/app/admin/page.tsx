@@ -1,0 +1,288 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Plus, Mail, Users, Calendar, Trash2, Edit } from "lucide-react"
+import Link from "next/link"
+import { PageBackground } from "@/components/page-background"
+
+interface Guest {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  address?: string
+  password: string
+  invitationSent: boolean
+  dotResponse: "pending" | "attending" | "not-attending"
+  civilResponse: "pending" | "attending" | "not-attending"
+  createdAt: string
+}
+
+export default function AdminDashboard() {
+  const [guests, setGuests] = useState<Guest[]>([
+    {
+      id: "1",
+      name: "Jean Dupont",
+      email: "jean@example.com",
+      phone: "01 23 45 67 89",
+      address: "123 Rue de la Paix",
+      password: "mariage2024",
+      invitationSent: true,
+      dotResponse: "attending",
+      civilResponse: "pending",
+      createdAt: "2024-01-15",
+    },
+    {
+      id: "2",
+      name: "Marie Martin",
+      email: "marie@example.com",
+      phone: "01 98 76 54 32",
+      address: "456 Avenue des Champs",
+      password: "celebration123",
+      invitationSent: false,
+      dotResponse: "pending",
+      civilResponse: "pending",
+      createdAt: "2024-01-16",
+    },
+  ])
+
+  const handleSendInvitation = (guestId: string) => {
+    setGuests(guests.map((guest) => (guest.id === guestId ? { ...guest, invitationSent: true } : guest)))
+  }
+
+  const getResponseBadge = (response: string) => {
+    switch (response) {
+      case "attending":
+        return <Badge className="bg-primary/10 text-primary">Présent</Badge>
+      case "not-attending":
+        return <Badge className="bg-red-100 text-red-600">Absent</Badge>
+      default:
+        return <Badge variant="outline" className="border-primary text-primary">En attente</Badge>
+    }
+  }
+
+  const stats = {
+    totalGuests: guests.length,
+    invitationsSent: guests.filter((g) => g.invitationSent).length,
+    dotAttending: guests.filter((g) => g.dotResponse === "attending").length,
+    civilAttending: guests.filter((g) => g.civilResponse === "attending").length,
+  }
+
+  return (
+    <PageBackground>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-primary wedding-title">Tableau de Bord Admin</h1>
+            <p className="text-primary/80">Gérez vos invitations de mariage</p>
+          </div>
+          <Link href="/">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+              Retour à l'Accueil
+            </Button>
+          </Link>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Total Invités</CardTitle>
+              <Users className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.totalGuests}</div>
+            </CardContent>
+          </Card>
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Invitations Envoyées</CardTitle>
+              <Mail className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.invitationsSent}</div>
+            </CardContent>
+          </Card>
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Cérémonie DOT</CardTitle>
+              <Calendar className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.dotAttending}</div>
+              <p className="text-xs text-primary/70">présents</p>
+            </CardContent>
+          </Card>
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Cérémonie Civile</CardTitle>
+              <Calendar className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.civilAttending}</div>
+              <p className="text-xs text-primary/70">présents</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="guests" className="space-y-6">
+          <TabsList className="bg-primary/10">
+            <TabsTrigger value="guests" className="data-[state=active]:bg-white data-[state=active]:text-primary">
+              Gestion des Invités
+            </TabsTrigger>
+            <TabsTrigger
+              value="invitations"
+              className="data-[state=active]:bg-white data-[state=active]:text-primary"
+            >
+              Invitations
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="guests" className="space-y-6">
+            <Card className="wedding-card">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-primary">Liste des Invités</CardTitle>
+                    <CardDescription className="text-primary/80">Gérez vos invités de mariage</CardDescription>
+                  </div>
+                  <Link href="/admin/add-guest">
+                    <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter un Invité
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-primary/20">
+                        <TableHead className="text-primary">Nom</TableHead>
+                        <TableHead className="text-primary">Email</TableHead>
+                        <TableHead className="text-primary">Téléphone</TableHead>
+                        <TableHead className="text-primary">Mot de passe</TableHead>
+                        <TableHead className="text-primary">Invitation</TableHead>
+                        <TableHead className="text-primary">Réponse DOT</TableHead>
+                        <TableHead className="text-primary">Réponse Civile</TableHead>
+                        <TableHead className="text-primary">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {guests.map((guest) => (
+                        <TableRow key={guest.id} className="border-b border-primary/20">
+                          <TableCell className="font-medium text-primary">{guest.name}</TableCell>
+                          <TableCell className="text-primary">{guest.email}</TableCell>
+                          <TableCell className="text-primary">{guest.phone || "N/A"}</TableCell>
+                          <TableCell>
+                            <code className="bg-primary/10 px-2 py-1 rounded text-sm text-primary">
+                              {guest.password}
+                            </code>
+                          </TableCell>
+                          <TableCell>
+                            {guest.invitationSent ? (
+                              <Badge className="bg-primary/10 text-primary">Envoyée</Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-primary text-primary">
+                                Non envoyée
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{getResponseBadge(guest.dotResponse)}</TableCell>
+                          <TableCell>{getResponseBadge(guest.civilResponse)}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              {!guest.invitationSent && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSendInvitation(guest.id)}
+                                  className="bg-primary hover:bg-primary/80 text-primary-foreground"
+                                  title="Envoyer l'invitation"
+                                >
+                                  <Mail className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-primary text-primary hover:bg-primary/10"
+                                title="Modifier"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-primary text-primary hover:bg-primary/10"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="invitations" className="space-y-6">
+            <Card className="wedding-card">
+              <CardHeader>
+                <CardTitle className="text-primary">Aperçu de l'Invitation</CardTitle>
+                <CardDescription className="text-primary/80">
+                  Aperçu de l'email d'invitation envoyé aux invités
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="border border-primary/20 rounded-lg p-6 bg-white">
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-primary mb-2 wedding-title">Vous êtes invité(e) !</h2>
+                    <p className="text-primary/80">Rejoignez-nous pour notre jour spécial</p>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-primary">Cher(e) invité(e),</p>
+                    <p className="text-primary">
+                      Nous sommes ravis de vous inviter à célébrer notre mariage ! Veuillez utiliser les identifiants
+                      suivants pour accéder à votre invitation et confirmer votre présence.
+                    </p>
+                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                      <p className="font-semibold text-primary">Détails de connexion :</p>
+                      <p className="text-primary">
+                        Site web : <span className="text-primary">votremariage.com/guest/login</span>
+                      </p>
+                      <p className="text-primary">
+                        Mot de passe :{" "}
+                        <code className="bg-primary/10 px-2 py-1 rounded text-primary">votre-mot-de-passe</code>
+                      </p>
+                    </div>
+                    <p className="text-primary">Veuillez confirmer votre présence pour les deux cérémonies :</p>
+                    <ul className="list-disc list-inside text-primary ml-4">
+                      <li>Cérémonie traditionnelle (DOT)</li>
+                      <li>Cérémonie civile</li>
+                    </ul>
+                    <p className="text-primary">Nous avons hâte de célébrer avec vous !</p>
+                    <p className="text-primary">
+                      Avec amour,
+                      <br />
+                      Julie & George
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </PageBackground>
+  )
+}
