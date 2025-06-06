@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Mail, Users, Calendar, Trash2, Edit } from "lucide-react"
-import Link from "next/link"
 import { PageBackground } from "@/components/page-background"
+import AddGuestPage from "./add-guest/page"
 
 interface Guest {
   id: string
@@ -24,36 +25,35 @@ interface Guest {
 }
 
 export default function AdminDashboard() {
-  const [guests, setGuests] = useState<Guest[]>([
-    {
-      id: "1",
-      name: "Jean Dupont",
-      email: "jean@example.com",
-      phone: "01 23 45 67 89",
-      address: "123 Rue de la Paix",
-      password: "mariage2024",
-      invitationSent: true,
-      dotResponse: "attending",
-      civilResponse: "pending",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      name: "Marie Martin",
-      email: "marie@example.com",
-      phone: "01 98 76 54 32",
-      address: "456 Avenue des Champs",
-      password: "celebration123",
-      invitationSent: false,
-      dotResponse: "pending",
-      civilResponse: "pending",
-      createdAt: "2024-01-16",
-    },
-  ])
+  const [guests, setGuests] = useState<Guest[]>([]);
 
-  const handleSendInvitation = (guestId: string) => {
-    setGuests(guests.map((guest) => (guest.id === guestId ? { ...guest, invitationSent: true } : guest)))
-  }
+  useEffect(() => {
+    const fetchGuests = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/guests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des invités");
+        }
+
+        const data = await response.json();
+        console.log("Invités récupérés :", data);
+        setGuests(data);
+      } catch (error) {
+        console.error("Erreur :", error);
+      }
+    };
+
+    fetchGuests();
+  }, []);
+
+  const addGuestToList = (newGuest: Guest) => {
+    setGuests((prevGuests) => [...prevGuests, newGuest]);
+  };
 
   const getResponseBadge = (response: string) => {
     switch (response) {
@@ -72,6 +72,60 @@ export default function AdminDashboard() {
     dotAttending: guests.filter((g) => g.dotResponse === "attending").length,
     civilAttending: guests.filter((g) => g.civilResponse === "attending").length,
   }
+
+  const handleSendInvitation = async (guestId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/guests/${guestId}/send-invitation`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi de l'invitation");
+      }
+
+      const updatedGuest = await response.json();
+      setGuests((prevGuests) =>
+        prevGuests.map((guest) => (guest.id === guestId ? updatedGuest : guest))
+      );
+    } catch (error) {
+      console.error("Erreur :", error);
+      alert("Une erreur est survenue lors de l'envoi de l'invitation.");
+    }
+  };
+
+  const handleDeleteGuest = async (guestId: string) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("Token JWT manquant. Veuillez vous reconnecter.");
+      }
+
+      console.log("ID de l'invité à supprimer :", guestId);
+
+      const response = await fetch(`http://localhost:5000/api/guests/${guestId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Erreur lors de la suppression de l'invité : ${errorMessage}`);
+      }
+
+      console.log("Réponse du backend :", await response.json());
+
+      // Mettre à jour la liste locale des invités
+      setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== guestId));
+    } catch (error) {
+      console.error("Erreur :", error);
+      alert("Une erreur est survenue lors de la suppression de l'invité.");
+    }
+  };
 
   return (
     <PageBackground>
@@ -221,6 +275,7 @@ export default function AdminDashboard() {
                                 variant="outline"
                                 className="border-primary text-primary hover:bg-primary/10"
                                 title="Supprimer"
+                                onClick={() => handleDeleteGuest(guest.id)} // Vérifiez que `guest.id` est défini
                               >
                                 <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>

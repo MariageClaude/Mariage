@@ -21,11 +21,29 @@ export default function AdminLoginPage() {
     setError("")
     setIsSubmitting(true)
 
-    // Vérification simple : admin / admin1234
-    if (username === "admin" && password === "admin1234") {
-      router.push("/admin")
-    } else {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Nom d'utilisateur ou mot de passe incorrect")
+      }
+
+      const data = await response.json()
+      console.log("Token reçu :", data.token) // Vérifiez que le token est bien reçu
+      localStorage.setItem("adminToken", data.token) // Stocker le token JWT
+      console.log("Token stocké dans localStorage :", localStorage.getItem("adminToken")) // Vérifiez le stockage
+      alert("Connexion réussie !")
+      router.push("/admin") // Rediriger vers le tableau de bord
+    } catch (error) {
+      console.error("Erreur de connexion :", error)
       setError("Nom d'utilisateur ou mot de passe incorrect")
+    } finally {
       setIsSubmitting(false)
     }
   }

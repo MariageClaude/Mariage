@@ -1,36 +1,35 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, User, Mail, MapPin, Key, Heart, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import { PageBackground } from "@/components/page-background"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { addGuestToListAction } from "@/app/actions/addGuestToListAction";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, User, Mail, MapPin, Key, Heart, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { PageBackground } from "@/components/page-background";
 
 interface GuestFormData {
-  name: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  country: string
-  guestType: "individual" | "couple" | "family"
-  partnerName: string
-  numberOfGuests: number
-  password: string
-  sendInvitation: boolean
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  guestType: string;
+  partnerName: string;
+  numberOfGuests: number;
+  password: string;
+  sendInvitation: boolean;
 }
 
 export default function AddGuestPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState<GuestFormData>({
     name: "",
     email: "",
@@ -43,81 +42,122 @@ export default function AddGuestPage() {
     numberOfGuests: 1,
     password: "",
     sendInvitation: false,
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Le nom complet est requis"
+      newErrors.name = "Le nom complet est requis";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "L'adresse email est requise"
+      newErrors.email = "L'adresse email est requise";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Veuillez entrer une adresse email valide"
+      newErrors.email = "Veuillez entrer une adresse email valide";
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = "Le mot de passe est requis"
+      newErrors.password = "Le mot de passe est requis";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Le mot de passe doit contenir au moins 6 caractères"
+      newErrors.password = "Le mot de passe doit contenir au moins 6 caractères";
     }
 
     if (formData.guestType === "couple" && !formData.partnerName.trim()) {
-      newErrors.partnerName = "Le nom du partenaire est requis pour les couples"
+      newErrors.partnerName = "Le nom du partenaire est requis pour les couples";
     }
 
     if (formData.numberOfGuests < 1 || formData.numberOfGuests > 10) {
-      newErrors.numberOfGuests = "Le nombre d'invités doit être entre 1 et 10"
+      newErrors.numberOfGuests = "Le nombre d'invités doit être entre 1 et 10";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const generatePassword = () => {
-    const words = ["amour", "joie", "celebration", "mariage", "toujours", "ensemble", "bonheur", "unite"]
-    const numbers = Math.floor(Math.random() * 999) + 100
-    const word = words[Math.floor(Math.random() * words.length)]
-    return `${word}${numbers}`
-  }
+    const words = ["amour", "joie", "celebration", "mariage", "toujours", "ensemble", "bonheur", "unite"];
+    const numbers = Math.floor(Math.random() * 999) + 100;
+    const word = words[Math.floor(Math.random() * words.length)];
+    return `${word}${numbers}`;
+  };
+
+  const addGuestToBackend = async (guestData: GuestFormData) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("Token JWT manquant. Veuillez vous reconnecter.");
+      }
+
+      const response = await fetch("http://localhost:5000/api/guests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(guestData),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Erreur lors de l'ajout de l'invité : ${errorMessage}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Erreur API :", error);
+      throw error;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      // In a real app, you would save to database here
-      console.log("Données invité:", formData)
+    try {
+      const newGuest = await addGuestToBackend(formData); // Appel à la fonction pour ajouter à la BD
+      console.log("Invité ajouté :", newGuest);
 
-      setIsSuccess(true)
-      setIsSubmitting(false)
+      setIsSuccess(true); // Afficher le message de succès
+      setIsSubmitting(false);
 
-      // Redirect after success
-      setTimeout(() => {
-        router.push("/admin")
-      }, 2000)
-    }, 1500)
-  }
+      // Réinitialiser le formulaire
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        country: "",
+        guestType: "individual",
+        partnerName: "",
+        numberOfGuests: 1,
+        password: "",
+        sendInvitation: false,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'invité :", error);
+      alert("Une erreur est survenue lors de l'ajout de l'invité.");
+      setIsSubmitting(false);
+    }
+  };
 
   const updateFormData = (field: keyof GuestFormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   if (isSuccess) {
     return (
@@ -142,7 +182,7 @@ export default function AddGuestPage() {
                 </Button>
                 <Button
                   onClick={() => {
-                    setIsSuccess(false)
+                    setIsSuccess(false);
                     setFormData({
                       name: "",
                       email: "",
@@ -155,7 +195,7 @@ export default function AddGuestPage() {
                       numberOfGuests: 1,
                       password: "",
                       sendInvitation: false,
-                    })
+                    });
                   }}
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary/10"
@@ -167,7 +207,7 @@ export default function AddGuestPage() {
           </Card>
         </div>
       </PageBackground>
-    )
+    );
   }
 
   return (
@@ -436,5 +476,5 @@ export default function AddGuestPage() {
         </div>
       </div>
     </PageBackground>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { sql } from "@/lib/database"
+import { type NextRequest, NextResponse } from "next/server";
+import { sql } from "@/lib/database";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -106,5 +106,28 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   } catch (error) {
     console.error("Error deleting guest:", error)
     return NextResponse.json({ error: "Failed to delete guest" }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { name, email, guestType, numberOfGuests, password } = body;
+
+    // Validation des champs requis
+    if (!name || !email || !guestType || !numberOfGuests || !password) {
+      return NextResponse.json({ error: "Tous les champs requis doivent être remplis." }, { status: 400 });
+    }
+
+    const newGuest = await sql`
+      INSERT INTO guests (name, email, guest_type, number_of_guests, password)
+      VALUES (${name}, ${email}, ${guestType}, ${numberOfGuests}, ${password})
+      RETURNING *
+    `;
+
+    return NextResponse.json(newGuest[0], { status: 201 });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'invité :", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
