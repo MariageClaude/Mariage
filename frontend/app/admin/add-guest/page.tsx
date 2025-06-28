@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { addGuestToListAction } from "@/app/actions/addGuestToListAction";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,12 +16,12 @@ import { PageBackground } from "@/components/page-background";
 interface GuestFormData {
   name: string;
   email: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
   guestType: string;
-  partnerName: string;
+  partnerName?: string;
   numberOfGuests: number;
   password: string;
   sendInvitation: boolean;
@@ -47,6 +46,21 @@ export default function AddGuestPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [guestList, setGuestList] = useState<GuestFormData[]>([]);
+
+  useEffect(() => {
+    const fetchGuests = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/guests");
+        const guests = await response.json();
+        setGuestList(guests);
+      } catch (error) {
+        console.error("Error fetching guests:", error);
+      }
+    };
+
+    fetchGuests();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -67,7 +81,7 @@ export default function AddGuestPage() {
       newErrors.password = "Le mot de passe doit contenir au moins 6 caractères";
     }
 
-    if (formData.guestType === "couple" && !formData.partnerName.trim()) {
+    if (formData.guestType === "couple" && !formData.partnerName?.trim()) {
       newErrors.partnerName = "Le nom du partenaire est requis pour les couples";
     }
 
@@ -92,6 +106,8 @@ export default function AddGuestPage() {
       if (!token) {
         throw new Error("Token JWT manquant. Veuillez vous reconnecter.");
       }
+
+      console.log("Données envoyées au backend :", guestData);
 
       const response = await fetch("http://localhost:5000/api/guests", {
         method: "POST",
@@ -124,13 +140,12 @@ export default function AddGuestPage() {
     setIsSubmitting(true);
 
     try {
-      const newGuest = await addGuestToBackend(formData); // Appel à la fonction pour ajouter à la BD
+      const newGuest = await addGuestToBackend(formData);
       console.log("Invité ajouté :", newGuest);
 
-      setIsSuccess(true); // Afficher le message de succès
+      setIsSuccess(true);
       setIsSubmitting(false);
 
-      // Réinitialiser le formulaire
       setFormData({
         name: "",
         email: "",
@@ -153,7 +168,6 @@ export default function AddGuestPage() {
 
   const updateFormData = (field: keyof GuestFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -346,60 +360,6 @@ export default function AddGuestPage() {
                       value={formData.phone}
                       onChange={(e) => updateFormData("phone", e.target.value)}
                       placeholder="01 23 45 67 89"
-                      className="border-primary focus:border-primary"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Address Information */}
-            <Card className="wedding-card shadow-lg">
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-charcoal-800">Informations d'Adresse</CardTitle>
-                </div>
-                <CardDescription className="text-charcoal-600">Adresse de l'invité (optionnel)</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="text-charcoal-700">
-                    Adresse
-                  </Label>
-                  <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => updateFormData("address", e.target.value)}
-                    placeholder="123 Rue de la Paix, Apt 4B"
-                    rows={2}
-                    className="border-primary focus:border-primary"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="city" className="text-charcoal-700">
-                      Ville
-                    </Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => updateFormData("city", e.target.value)}
-                      placeholder="Paris"
-                      className="border-primary focus:border-primary"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="country" className="text-charcoal-700">
-                      Pays
-                    </Label>
-                    <Input
-                      id="country"
-                      value={formData.country}
-                      onChange={(e) => updateFormData("country", e.target.value)}
-                      placeholder="France"
                       className="border-primary focus:border-primary"
                     />
                   </div>

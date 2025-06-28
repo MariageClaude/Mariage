@@ -1,27 +1,28 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Mail, Users, Calendar, Trash2, Edit } from "lucide-react"
-import { PageBackground } from "@/components/page-background"
-import AddGuestPage from "./add-guest/page"
+"use client";
+import { deleteGuestAction } from "@/app/actions/deleteGuestAction";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Mail, Users, Calendar, Trash2, Edit } from "lucide-react";
+import { PageBackground } from "@/components/page-background";
 
 interface Guest {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  address?: string
-  password: string
-  invitationSent: boolean
-  dotResponse: "pending" | "attending" | "not-attending"
-  civilResponse: "pending" | "attending" | "not-attending"
-  createdAt: string
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  plainPassword: string; 
+  password: string;
+  invitationSent: boolean;
+  dotResponse: "pending" | "attending" | "not-attending";
+  civilResponse: "pending" | "attending" | "not-attending";
+  NightResponse: "pending" | "attending" | "not-attending";
+  createdAt: string;
 }
 
 export default function AdminDashboard() {
@@ -42,7 +43,14 @@ export default function AdminDashboard() {
 
         const data = await response.json();
         console.log("Invités récupérés :", data);
-        setGuests(data);
+
+        // Mappez les données pour inclure un champ `id` basé sur `_id`
+        const mappedGuests = data.map((guest: any) => ({
+          ...guest,
+          id: guest._id, // Transforme `_id` en `id`
+        }));
+
+        setGuests(mappedGuests);
       } catch (error) {
         console.error("Erreur :", error);
       }
@@ -52,26 +60,31 @@ export default function AdminDashboard() {
   }, []);
 
   const addGuestToList = (newGuest: Guest) => {
-    setGuests((prevGuests) => [...prevGuests, newGuest]);
+    setGuests((prevGuests) => {
+      const updatedGuests = [...prevGuests, newGuest];
+      console.log("Liste des invités mise à jour :", updatedGuests);
+      return updatedGuests;
+    });
   };
 
   const getResponseBadge = (response: string) => {
     switch (response) {
       case "attending":
-        return <Badge className="bg-primary/10 text-primary">Présent</Badge>
+        return <Badge className="bg-primary/10 text-primary">Présent</Badge>;
       case "not-attending":
-        return <Badge className="bg-red-100 text-red-600">Absent</Badge>
+        return <Badge className="bg-red-100 text-red-600">Absent</Badge>;
       default:
-        return <Badge variant="outline" className="border-primary text-primary">En attente</Badge>
+        return <Badge variant="outline" className="border-primary text-primary">En attente</Badge>;
     }
-  }
+  };
 
   const stats = {
     totalGuests: guests.length,
     invitationsSent: guests.filter((g) => g.invitationSent).length,
     dotAttending: guests.filter((g) => g.dotResponse === "attending").length,
     civilAttending: guests.filter((g) => g.civilResponse === "attending").length,
-  }
+    NightAttending: guests.filter((g) => g.NightResponse === "attending").length,
+  };
 
   const handleSendInvitation = async (guestId: string) => {
     try {
@@ -98,17 +111,12 @@ export default function AdminDashboard() {
 
   const handleDeleteGuest = async (guestId: string) => {
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) {
-        throw new Error("Token JWT manquant. Veuillez vous reconnecter.");
-      }
-
       console.log("ID de l'invité à supprimer :", guestId);
 
       const response = await fetch(`http://localhost:5000/api/guests/${guestId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
         },
       });
 
@@ -117,7 +125,8 @@ export default function AdminDashboard() {
         throw new Error(`Erreur lors de la suppression de l'invité : ${errorMessage}`);
       }
 
-      console.log("Réponse du backend :", await response.json());
+      const result = await response.json();
+      console.log("Réponse du backend :", result);
 
       // Mettre à jour la liste locale des invités
       setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== guestId));
@@ -155,16 +164,7 @@ export default function AdminDashboard() {
           </Card>
           <Card className="wedding-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Invitations Envoyées</CardTitle>
-              <Mail className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.invitationsSent}</div>
-            </CardContent>
-          </Card>
-          <Card className="wedding-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Cérémonie DOT</CardTitle>
+              <CardTitle className="text-sm font-medium text-primary">Cérémonie DOTE</CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -182,6 +182,16 @@ export default function AdminDashboard() {
               <p className="text-xs text-primary/70">présents</p>
             </CardContent>
           </Card>
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Cérémonie nuxiale</CardTitle>
+              <Calendar className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.NightAttending}</div>
+              <p className="text-xs text-primary/70">présents</p>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="guests" className="space-y-6">
@@ -189,93 +199,50 @@ export default function AdminDashboard() {
             <TabsTrigger value="guests" className="data-[state=active]:bg-white data-[state=active]:text-primary">
               Gestion des Invités
             </TabsTrigger>
-            <TabsTrigger
-              value="invitations"
-              className="data-[state=active]:bg-white data-[state=active]:text-primary"
-            >
-              Invitations
-            </TabsTrigger>
           </TabsList>
-
+          
           <TabsContent value="guests" className="space-y-6">
             <Card className="wedding-card">
               <CardHeader>
-                <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-primary">Liste des Invités</CardTitle>
                     <CardDescription className="text-primary/80">Gérez vos invités de mariage</CardDescription>
                   </div>
-                  <Link href="/admin/add-guest">
-                    <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Ajouter un Invité
-                    </Button>
-                  </Link>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b border-primary/20">
+                      <TableRow>
                         <TableHead className="text-primary">Nom</TableHead>
-                        <TableHead className="text-primary">Email</TableHead>
-                        <TableHead className="text-primary">Téléphone</TableHead>
-                        <TableHead className="text-primary">Mot de passe</TableHead>
-                        <TableHead className="text-primary">Invitation</TableHead>
                         <TableHead className="text-primary">Réponse DOT</TableHead>
                         <TableHead className="text-primary">Réponse Civile</TableHead>
+                        <TableHead className="text-primary">Réponse Céremonie de nuit</TableHead>
                         <TableHead className="text-primary">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {guests.map((guest) => (
-                        <TableRow key={guest.id} className="border-b border-primary/20">
+                        <TableRow key={guest.id}>
                           <TableCell className="font-medium text-primary">{guest.name}</TableCell>
-                          <TableCell className="text-primary">{guest.email}</TableCell>
-                          <TableCell className="text-primary">{guest.phone || "N/A"}</TableCell>
-                          <TableCell>
-                            <code className="bg-primary/10 px-2 py-1 rounded text-sm text-primary">
-                              {guest.password}
-                            </code>
-                          </TableCell>
-                          <TableCell>
-                            {guest.invitationSent ? (
-                              <Badge className="bg-primary/10 text-primary">Envoyée</Badge>
-                            ) : (
-                              <Badge variant="outline" className="border-primary text-primary">
-                                Non envoyée
-                              </Badge>
-                            )}
-                          </TableCell>
                           <TableCell>{getResponseBadge(guest.dotResponse)}</TableCell>
                           <TableCell>{getResponseBadge(guest.civilResponse)}</TableCell>
+                          <TableCell>{getResponseBadge(guest.NightResponse)}</TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              {!guest.invitationSent && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSendInvitation(guest.id)}
-                                  className="bg-primary hover:bg-primary/80 text-primary-foreground"
-                                  title="Envoyer l'invitation"
-                                >
-                                  <Mail className="h-4 w-4" />
-                                </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-primary text-primary hover:bg-primary/10"
-                                title="Modifier"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="border-primary text-primary hover:bg-primary/10"
                                 title="Supprimer"
-                                onClick={() => handleDeleteGuest(guest.id)} // Vérifiez que `guest.id` est défini
+                                onClick={() => {
+                                  if (confirm("Êtes-vous sûr de vouloir supprimer cet invité ?")) {
+                                    console.log("ID invité :", guest.id); // Vérifiez que `guest.id` est défini
+                                    handleDeleteGuest(guest.id);
+                                  }
+                                }}
                               >
                                 <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>
@@ -329,7 +296,7 @@ export default function AdminDashboard() {
                     <p className="text-primary">
                       Avec amour,
                       <br />
-                      Julie & George
+                      Cedric & Claude
                     </p>
                   </div>
                 </div>
@@ -339,5 +306,5 @@ export default function AdminDashboard() {
         </Tabs>
       </div>
     </PageBackground>
-  )
+  );
 }

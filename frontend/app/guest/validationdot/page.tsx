@@ -9,19 +9,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Heart, Calendar, MapPin, Clock, CheckCircle } from "lucide-react"
+import { Heart, Calendar, MapPin, Clock, CheckCircle, Bold } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { PageBackground } from "@/components/page-background"
 
 interface CeremonyResponse {
-  
-  civil: "attending" | "not-attending" | ""
+  dot: "attending" | "not-attending" | ""
 }
 
 export default function GuestValidation() {
   const [guestName, setGuestName] = useState("")
-  const [responses, setResponses] = useState<CeremonyResponse>({  civil: "" })
+  const [responses, setResponses] = useState<CeremonyResponse>({ dot: "" })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -59,7 +58,7 @@ export default function GuestValidation() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          civilResponse: responses.civil,
+          dotResponse: responses.dot,
         }),
       });
 
@@ -92,28 +91,17 @@ export default function GuestValidation() {
 
   return (
     <PageBackground>
-    <div className="background min-h-screen">
+    <div className="background">
       <div className="content">
-        <div className="container mx-auto px-4 py-8 md:py-16">
-          <div className="max-w-4xl mx-auto">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto" >
             {/* Header */}
             <div className="text-center mb-8">
-              <Heart className="h-12 w-12 md:h-16 md:w-16 text-sage-600 mx-auto mb-4" />
-              <h1
-                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 wedding-title text-primary"
-                style={{ fontStyle: "Bold" }}
-              >
-                Bienvenue, {guestName} !
-              </h1>
-              <p
-                className="text-lg sm:text-xl md:text-2xl font-bold mb-2 wedding-title text-charcoal-800"
-                style={{ fontStyle: "Bold" }}
-              >
-                Veuillez confirmer votre présence pour notre jour spécial
-              </p>
+              <Heart className="h-16 w-16 text-sage-600 mx-auto mb-4" />
+              <h1 className="text-4xl font-bold text-charcoal-800 mb-2 wedding-title" style={{ color: '#000000', fontStyle: 'Bold' }}>Bienvenue, {guestName} !</h1>
+              <p className="text-4xl font-bold text-charcoal-800 mb-2 wedding-title" style={{ color: '#000000', fontStyle: 'Bold', fontSize: '20px' }}>Veuillez confirmer votre présence pour notre jour spécial</p>
             </div>
 
-            {/* Alert */}
             {isSubmitted && (
               <Alert className="mb-8 border-sage-200 bg-sage-50">
                 <CheckCircle className="h-4 w-4 text-sage-600" />
@@ -124,15 +112,15 @@ export default function GuestValidation() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Civil Wedding Ceremony */}
+              {/* Traditional Ceremony (DOT) */}
               <Card className="wedding-card shadow-lg">
                 <CardHeader>
                   <div className="flex items-center space-x-3">
-                    <Heart className="h-6 w-6 text-sage-600" />
+                    <Calendar className="h-6 w-6 text-sage-600" />
                     <div>
-                      <CardTitle className="text-2xl text-charcoal-800">Cérémonie Civile</CardTitle>
+                      <CardTitle className="text-2xl text-charcoal-800">Cérémonie Traditionnelle (DOT)</CardTitle>
                       <CardDescription className="text-charcoal-600">
-                        Rejoignez-nous pour notre cérémonie de mariage civile
+                        Rejoignez-nous pour notre cérémonie de mariage traditionnelle
                       </CardDescription>
                     </div>
                   </div>
@@ -143,61 +131,62 @@ export default function GuestValidation() {
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4 text-charcoal-500" />
                         <span className="font-semibold text-charcoal-700">Date :</span>
-                        <span className="text-charcoal-700">Samedi 26 Juillet 2025</span>
+                        <span className="text-charcoal-700">Samedi 26 juillet 2025</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-charcoal-500" />
                         <span className="font-semibold text-charcoal-700">Heure :</span>
-                        <span className="text-charcoal-700">09h00</span>
+                        <span className="text-charcoal-700"> 21h00</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <MapPin className="h-4 w-4 text-charcoal-500" />
                         <span className="font-semibold text-charcoal-700">Lieu :</span>
-                        <span className="text-charcoal-700">Mairie de bandjoun</span>
+                        <span className="text-charcoal-700">Bana Quartier Bakap</span>
                       </div>
                     </div>
                     <div className="bg-cream-50 p-4 rounded-lg border border-cream-200">
                       <h4 className="font-semibold text-charcoal-800 mb-2">À quoi s'attendre :</h4>
                       <ul className="text-sm text-charcoal-700 space-y-1">
-                        <li>• Cérémonie officielle</li>
-                        <li>• Échange des vœux</li>
-                        <li>• Séance photo</li>
+                        <li>• Rituels de mariage traditionnels</li>
+                        <li>• Spectacles culturels</li>
+                        <li>• Tenue traditionnelle recommandée</li>
+                        <li>• Reception</li>
                       </ul>
                     </div>
                   </div>
-
+  
                   <div className="space-y-3">
                     <Label className="text-base font-semibold text-charcoal-700">
-                      Assisterez-vous à la Cérémonie Civile ?
+                      Assisterez-vous à la Cérémonie Traditionnelle ?
                     </Label>
                     <RadioGroup
-                      value={responses.civil}
+                      value={responses.dot}
                       onValueChange={(value) =>
-                        setResponses({ ...responses, civil: value as "attending" | "not-attending" })
+                        setResponses({ ...responses, dot: value as "attending" | "not-attending" })
                       }
-                     // Disable the input if responses are submitted
+                      disabled={isSubmitted} // Disable the input if responses are submitted
                       className="space-y-3"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="attending" id="civil-yes" className="text-sage-600" />
-                        <Label htmlFor="civil-yes" className="cursor-pointer text-charcoal-700">
+                        <RadioGroupItem value="attending" id="dot-yes" className="text-sage-600" />
+                        <Label htmlFor="dot-yes" className="cursor-pointer text-charcoal-700">
                           Oui, je serai présent(e)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="not-attending" id="civil-no" className="text-sage-600" />
-                        <Label htmlFor="civil-no" className="cursor-pointer text-charcoal-700">
+                        <RadioGroupItem value="not-attending" id="dot-no" className="text-sage-600" />
+                        <Label htmlFor="dot-no" className="cursor-pointer text-charcoal-700">
                           Désolé(e), je ne peux pas assister
                         </Label>
                       </div>
                     </RadioGroup>
-                    {responses.civil && (
+                    {responses.dot && (
                       <Badge
                         className={
-                          responses.civil === "attending" ? "bg-sage-100 text-sage-800" : "bg-cream-100 text-charcoal-800"
+                          responses.dot === "attending" ? "bg-sage-100 text-sage-800" : "bg-cream-100 text-charcoal-800"
                         }
                       >
-                        {responses.civil === "attending" ? "Présent" : "Absent"}
+                        {responses.dot === "attending" ? "Présent" : "Absent"}
                       </Badge>
                     )}
                   </div>
@@ -205,53 +194,65 @@ export default function GuestValidation() {
               </Card>
 
               {/* Submit Button */}
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                {/* Show "Confirmer votre Réponse" button only when not submitted */}
-                {!isSubmitted && (
+              <div className="flex justify-center space-x-4">
+                {!isSubmitted ? (
+                  // Show "Confirmer la Présence" button when not submitted
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
-                    disabled={!responses.civil || isLoading}
+                    className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
+                    disabled={!responses.dot || isLoading}
                   >
-                    {isLoading ? "Enregistrement..." : "Confirmer votre Réponse"}
+                    {isLoading ? "Enregistrement..." : "Confirmer la Présence"}
                   </Button>
-                )}
-                {/* Show "Modifier votre Réponse" and "Se Déconnecter" buttons only after submission */}
-                {isSubmitted && (
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <Button
-                      onClick={() => setIsSubmitted(false)} // Reset submission state
-                      variant="outline"
-                      className="w-full sm:w-auto border-sage-300 text-sage-700 hover:bg-sage-50"
-                    >
-                      Modifier votre Réponse
-                    </Button>
-                    
+                ) : (
+                  // Show "Modifier les Réponses" and "Se Déconnecter" buttons when submitted
+                  <div className="text-center space-y-4">
+                    <p className="text-sage-600 font-semibold">Vos réponses ont été enregistrées !</p>
+                    <div className="space-x-4">
+                      <Button
+                        onClick={() => setIsSubmitted(false)} // Reset submission state
+                        variant="outline"
+                        className="border-sage-300 text-sage-700 hover:bg-sage-50"
+                      >
+                        Modifier les Réponses
+                      </Button>
+                     
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Responsive Link Button */}
               <div className="text-center mt-8">
-                <Link href="/guest/validationdot" className="block">
-                  <Button className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg">
-                    Aller à la page DOT
+                <Link href="/guest/validationNuxiale" className="block">
+                  <Button
+                    className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
+                  >
+                    Aller à la page de cérémonie nuptiale
                   </Button>
                 </Link>
               </div>
+              <Link href="/guest/validation" className="block">
+                <Button
+                  className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
+                >
+                  Retour
+                </Button>
+              </Link>
+
             </form>
 
             {/* Footer */}
             <div className="text-center mt-12 space-y-4">
-              <p className="text-base sm:text-lg md:text-xl font-bold text-charcoal-800 mb-2 wedding-title">
+              <p className="text-4xl font-bold text-charcoal-800 mb-2 wedding-title" style={{ color: '#000000', fontStyle: 'Bold', fontSize: '20px' }}>
                 Nous avons hâte de célébrer avec vous ! Si vous avez des questions, n'hésitez pas à nous contacter.
               </p>
             </div>
           </div>
         </div>
       </div>
+      
     </div>
-    </PageBackground>
+  </PageBackground>
+
   )
 }

@@ -15,7 +15,7 @@ export function PageBackground({ children, overlay = true, overlayOpacity = 0.1 
   return (
     <VideoBackground
       videoSrc={videoSrc}
-      fallbackImage="/images/weddingPic.webp"
+      fallbackImage="/images/back.png"
       overlay={overlay}
       overlayOpacity={overlayOpacity}
     >

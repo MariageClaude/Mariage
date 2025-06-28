@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
               'notes', cr.notes
             )
           ) FILTER (WHERE cr.id IS NOT NULL), 
-          '[]'
+          '[]    http://localhost:3000'
         ) as responses
       FROM guests g
       LEFT JOIN ceremony_responses cr ON g.id = cr.guest_id
@@ -88,24 +88,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const guestId = Number.parseInt(params.id)
+    const guestId = Number.parseInt(params.id);
+
+    if (isNaN(guestId)) {
+      return NextResponse.json({ error: "Invalid guest ID" }, { status: 400 });
+    }
 
     const deletedGuest = await sql`
       DELETE FROM guests 
       WHERE id = ${guestId}
       RETURNING *
-    `
+    `;
 
     if (deletedGuest.length === 0) {
-      return NextResponse.json({ error: "Guest not found" }, { status: 404 })
+      return NextResponse.json({ error: "Guest not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       message: "Guest deleted successfully",
-    })
+      deletedGuest: deletedGuest[0],
+    });
   } catch (error) {
-    console.error("Error deleting guest:", error)
-    return NextResponse.json({ error: "Failed to delete guest" }, { status: 500 })
+    console.error("Error deleting guest with ID:", params.id, error);
+    return NextResponse.json({ error: "Failed to delete guest" }, { status: 500 });
   }
 }
 
