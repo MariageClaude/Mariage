@@ -1,138 +1,104 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { sql } from "@/lib/database";
+import { NextResponse } from "next/server"
+import { ObjectId } from "mongodb"
+import { getDb } from "@/lib/mongodb"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+// GET un invité avec ses réponses
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const guestId = Number.parseInt(params.id)
+    const db = await getDb()
+    const guest = await db.collection("guests").aggregate([
+      { $match: { _id: new ObjectId(params.id) } },
+      {
+        $lookup: {
+          from: "ceremony_responses",
+          localField: "_id",
+          foreignField: "guest_id",
+          as: "responses"
+        }
+      }
+    ]).next()
 
-    const guest = await sql`
-      SELECT 
-        g.*,
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'ceremony_type', cr.ceremony_type,
-              'response', cr.response,
-              'response_date', cr.response_date,
-              'notes', cr.notes
-            )
-          ) FILTER (WHERE cr.id IS NOT NULL), 
-          '[]    http://localhost:3000'
-        ) as responses
-      FROM guests g
-      LEFT JOIN ceremony_responses cr ON g.id = cr.guest_id
-      WHERE g.id = ${guestId}
-      GROUP BY g.id
-    `
-
-    if (guest.length === 0) {
+    if (!guest) {
       return NextResponse.json({ error: "Guest not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ guest: guest[0] })
+    return NextResponse.json({ guest })
   } catch (error) {
     console.error("Error fetching guest:", error)
     return NextResponse.json({ error: "Failed to fetch guest" }, { status: 500 })
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// PUT pour mettre à jour un invité
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const guestId = Number.parseInt(params.id)
+    const db = await getDb()
     const body = await request.json()
+    const updateFields = { ...body }
+    delete updateFields._id
 
-    const {
-      name,
-      email,
-      phone,
-      address,
-      city,
-      country,
-      guest_type,
-      partner_name,
-      number_of_guests,
-      dietary_restrictions,
-      special_requests,
-    } = body
+    const result = await db.collection("guests").findOneAndUpdate(
+      { _id: new ObjectId(params.id) },
+      { $set: updateFields },
+      { returnDocument: "after" }
+    )
 
-    const updatedGuest = await sql`
-      UPDATE guests SET
-        name = ${name},
-        email = ${email},
-        phone = ${phone},
-        address = ${address},
-        city = ${city},
-        country = ${country},
-        guest_type = ${guest_type},
-        partner_name = ${partner_name},
-        number_of_guests = ${number_of_guests},
-        dietary_restrictions = ${dietary_restrictions},
-        special_requests = ${special_requests}
-      WHERE id = ${guestId}
-      RETURNING *
-    `
-
-    if (updatedGuest.length === 0) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: "Guest not found" }, { status: 404 })
     }
 
-    return NextResponse.json({
-      message: "Guest updated successfully",
-      guest: updatedGuest[0],
-    })
+    return NextResponse.json({ message: "Guest updated successfully", guest: result.value })
   } catch (error) {
     console.error("Error updating guest:", error)
     return NextResponse.json({ error: "Failed to update guest" }, { status: 500 })
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE un invité
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const guestId = Number.parseInt(params.id);
+    const db = await getDb()
+    const result = await db.collection("guests").findOneAndDelete({ _id: new ObjectId(params.id) })
 
-    if (isNaN(guestId)) {
-      return NextResponse.json({ error: "Invalid guest ID" }, { status: 400 });
+    if (!result || !result.value) {
+      return NextResponse.json({ error: "Guest not found" }, { status: 404 })
     }
 
-    const deletedGuest = await sql`
-      DELETE FROM guests 
-      WHERE id = ${guestId}
-      RETURNING *
-    `;
-
-    if (deletedGuest.length === 0) {
-      return NextResponse.json({ error: "Guest not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      message: "Guest deleted successfully",
-      deletedGuest: deletedGuest[0],
-    });
+    return NextResponse.json({ message: "Guest deleted successfully", deletedGuest: result.value })
   } catch (error) {
-    console.error("Error deleting guest with ID:", params.id, error);
-    return NextResponse.json({ error: "Failed to delete guest" }, { status: 500 });
+    console.error("Error deleting guest:", error)
+    return NextResponse.json({ error: "Failed to delete guest" }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST pour créer un invité (optionnel ici, car déjà dans /guests/route.ts)
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, email, guestType, numberOfGuests, password } = body;
+    const db = await getDb()
+    const body = await request.json()
+    const { name, email, guestType, numberOfGuests, password } = body
 
-    // Validation des champs requis
     if (!name || !email || !guestType || !numberOfGuests || !password) {
-      return NextResponse.json({ error: "Tous les champs requis doivent être remplis." }, { status: 400 });
+      return NextResponse.json({ error: "Tous les champs requis doivent être remplis." }, { status: 400 })
     }
 
-    const newGuest = await sql`
-      INSERT INTO guests (name, email, guest_type, number_of_guests, password)
-      VALUES (${name}, ${email}, ${guestType}, ${numberOfGuests}, ${password})
-      RETURNING *
-    `;
+    const existingGuest = await db.collection("guests").findOne({ email })
+    if (existingGuest) {
+      return NextResponse.json({ error: "A guest with this email already exists" }, { status: 409 })
+    }
 
-    return NextResponse.json(newGuest[0], { status: 201 });
+    const result = await db.collection("guests").insertOne({
+      name,
+      email,
+      guest_type: guestType,
+      number_of_guests: numberOfGuests,
+      password,
+      created_at: new Date(),
+    })
+
+    return NextResponse.json({ _id: result.insertedId, name, email, guestType, numberOfGuests }, { status: 201 })
   } catch (error) {
-    console.error("Erreur lors de l'ajout de l'invité :", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("Erreur lors de l'ajout de l'invité :", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
