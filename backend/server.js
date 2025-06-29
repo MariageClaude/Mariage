@@ -7,6 +7,16 @@ const authRoutes = require('./routes/auth');
 const guestRoutes = require('./routes/guests');
 
 const app = express();
+const cors = require('cors');
+
+const corsOptions = {
+  origin: 'https://mariage-ttxm.onrender.com', // ton frontend
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // si tu utilises les cookies ou sessions
+};
+
+app.use(cors(corsOptions));
+
 
 // Middleware
 app.use(cors());
