@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { ObjectId } from "mongodb"
-import { getDb } from "./mongodb"
+import { sql } from "./database"
+import type { AdminUser } from "./database"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
 export interface AuthUser {
-  id: string
+  id: number
   email: string
   name: string
   role: string
@@ -22,26 +22,31 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 export async function authenticateAdmin(email: string, password: string): Promise<AuthUser | null> {
   try {
-    const db = await getDb()
-    const user = await db.collection("admin_users").findOne({ email })
+    const users = (await sql`
+      SELECT * FROM admin_users 
+      WHERE email = ${email}
+    `) as AdminUser[]
 
-    if (!user) {
+    if (users.length === 0) {
       return null
     }
 
+    const user = users[0]
     const isValid = await verifyPassword(password, user.password_hash)
+
     if (!isValid) {
       return null
     }
 
     // Update last login
-    await db.collection("admin_users").updateOne(
-      { _id: user._id },
-      { $set: { last_login: new Date() } }
-    )
+    await sql`
+      UPDATE admin_users 
+      SET last_login = CURRENT_TIMESTAMP 
+      WHERE id = ${user.id}
+    `
 
     return {
-      id: user._id.toString(),
+      id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -52,20 +57,18 @@ export async function authenticateAdmin(email: string, password: string): Promis
   }
 }
 
-export async function authenticateGuest(password: string): Promise<{ id: string; name: string; email: string } | null> {
+export async function authenticateGuest(password: string): Promise<{ id: number; name: string; email: string } | null> {
   try {
-    const db = await getDb()
-    const guest = await db.collection("guests").findOne({ password })
+    const guests = await sql`
+      SELECT id, name, email FROM guests 
+      WHERE password = ${password}
+    `
 
-    if (!guest) {
+    if (guests.length === 0) {
       return null
     }
 
-    return {
-      id: guest._id.toString(),
-      name: guest.name,
-      email: guest.email,
-    }
+    return guests[0] as { id: number; name: string; email: string }
   } catch (error) {
     console.error("Guest authentication error:", error)
     return null

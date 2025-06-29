@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server"
-import { getDb } from "../../../lib/mongodb"
+import { sql } from "@/lib/database"
 
 export async function GET() {
   try {
-    const db = await getDb()
-
     // Get basic stats
     const [
       totalGuests,
@@ -15,67 +13,54 @@ export async function GET() {
       civilNotAttending,
       pendingResponses,
     ] = await Promise.all([
-      db.collection("guests").countDocuments(),
-      db.collection("guests").countDocuments({ invitation_sent: true }),
-      db.collection("ceremony_responses").countDocuments({ ceremony_type: "dot", response: "attending" }),
-      db.collection("ceremony_responses").countDocuments({ ceremony_type: "civil", response: "attending" }),
-      db.collection("ceremony_responses").countDocuments({ ceremony_type: "dot", response: "not-attending" }),
-      db.collection("ceremony_responses").countDocuments({ ceremony_type: "civil", response: "not-attending" }),
-      db.collection("ceremony_responses").countDocuments({ response: "pending" }),
+      sql`SELECT COUNT(*) as count FROM guests`,
+      sql`SELECT COUNT(*) as count FROM guests WHERE invitation_sent = true`,
+      sql`SELECT COUNT(*) as count FROM ceremony_responses WHERE ceremony_type = 'dot' AND response = 'attending'`,
+      sql`SELECT COUNT(*) as count FROM ceremony_responses WHERE ceremony_type = 'civil' AND response = 'attending'`,
+      sql`SELECT COUNT(*) as count FROM ceremony_responses WHERE ceremony_type = 'dot' AND response = 'not-attending'`,
+      sql`SELECT COUNT(*) as count FROM ceremony_responses WHERE ceremony_type = 'civil' AND response = 'not-attending'`,
+      sql`SELECT COUNT(*) as count FROM ceremony_responses WHERE response = 'pending'`,
     ])
 
     // Get response breakdown by ceremony
-    const responseBreakdown = await db.collection("ceremony_responses").aggregate([
-      {
-        $group: {
-          _id: { ceremony_type: "$ceremony_type", response: "$response" },
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { "_id.ceremony_type": 1, "_id.response": 1 }
-      }
-    ]).toArray()
+    const responseBreakdown = await sql`
+      SELECT 
+        ceremony_type,
+        response,
+        COUNT(*) as count
+      FROM ceremony_responses
+      GROUP BY ceremony_type, response
+      ORDER BY ceremony_type, response
+    `
 
     // Get recent activity
-    const recentActivity = await db.collection("ceremony_responses").aggregate([
-      { $match: { response: { $ne: "pending" } } },
-      {
-        $lookup: {
-          from: "guests",
-          localField: "guest_id",
-          foreignField: "_id",
-          as: "guest"
-        }
-      },
-      { $unwind: "$guest" },
-      {
-        $project: {
-          guest_name: "$guest.name",
-          guest_email: "$guest.email",
-          ceremony_type: 1,
-          response: 1,
-          response_date: 1
-        }
-      },
-      { $sort: { response_date: -1 } },
-      { $limit: 10 }
-    ]).toArray()
+    const recentActivity = await sql`
+      SELECT 
+        g.name,
+        cr.ceremony_type,
+        cr.response,
+        cr.response_date
+      FROM ceremony_responses cr
+      JOIN guests g ON cr.guest_id = g.id
+      WHERE cr.response != 'pending'
+      ORDER BY cr.response_date DESC
+      LIMIT 10
+    `
 
     const stats = {
-      totalGuests,
-      invitationsSent,
+      totalGuests: Number.parseInt(totalGuests[0].count),
+      invitationsSent: Number.parseInt(invitationsSent[0].count),
       ceremonies: {
         dot: {
-          attending: dotAttending,
-          notAttending: dotNotAttending,
+          attending: Number.parseInt(dotAttending[0].count),
+          notAttending: Number.parseInt(dotNotAttending[0].count),
         },
         civil: {
-          attending: civilAttending,
-          notAttending: civilNotAttending,
+          attending: Number.parseInt(civilAttending[0].count),
+          notAttending: Number.parseInt(civilNotAttending[0].count),
         },
       },
-      pendingResponses,
+      pendingResponses: Number.parseInt(pendingResponses[0].count),
       responseBreakdown,
       recentActivity,
     }

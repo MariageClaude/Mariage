@@ -1,106 +1,77 @@
-import { NextResponse } from "next/server"
-import { ObjectId } from "mongodb"
-import { getDb } from "@/lib/mongodb"
+import { type NextRequest, NextResponse } from "next/server"
+import { sql } from "@/lib/database"
 
-// POST: Met à jour les réponses d'un invité
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const db = await getDb()
-    const { guestId, responses } = await request.json()
+    const body = await request.json()
+    const { guestId, responses } = body
 
+    // Validate input
     if (!guestId || !responses) {
       return NextResponse.json({ error: "Guest ID and responses are required" }, { status: 400 })
     }
 
-    // Vérifie que le guest existe
-    const guest = await db.collection("guests").findOne({ _id: new ObjectId(guestId) })
-    if (!guest) {
+    // Verify guest exists
+    const guests = await sql`
+      SELECT id FROM guests WHERE id = ${guestId}
+    `
+
+    if (guests.length === 0) {
       return NextResponse.json({ error: "Guest not found" }, { status: 404 })
     }
 
+    // Update or insert ceremony responses
     const updatedResponses = []
-    for (const [ceremony_type, response] of Object.entries(responses)) {
-      if (ceremony_type === "dot" || ceremony_type === "civil") {
-        // Upsert la réponse pour chaque cérémonie
-        const result = await db.collection("ceremony_responses").findOneAndUpdate(
-          { guest_id: guest._id, ceremony_type },
-          {
-            $set: {
-              response,
-              response_date: new Date(),
-            },
-          },
-          { upsert: true, returnDocument: "after" }
-        )
-        if (result && result.value) {
-          updatedResponses.push(result.value)
-        }
+
+    for (const [ceremonyType, response] of Object.entries(responses)) {
+      if (ceremonyType === "dot" || ceremonyType === "civil") {
+        const result = await sql`
+          INSERT INTO ceremony_responses (guest_id, ceremony_type, response)
+          VALUES (${guestId}, ${ceremonyType}, ${response})
+          ON CONFLICT (guest_id, ceremony_type)
+          DO UPDATE SET 
+            response = ${response},
+            response_date = CURRENT_TIMESTAMP
+          RETURNING *
+        `
+        updatedResponses.push(result[0])
       }
     }
 
-    return NextResponse.json({ message: "Responses updated successfully", responses: updatedResponses })
+    return NextResponse.json({
+      message: "Responses updated successfully",
+      responses: updatedResponses,
+    })
   } catch (error) {
     console.error("Error updating responses:", error)
     return NextResponse.json({ error: "Failed to update responses" }, { status: 500 })
   }
 }
 
-// GET: Récupère les réponses (pour un invité ou tous)
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const db = await getDb()
     const { searchParams } = new URL(request.url)
     const guestId = searchParams.get("guestId")
 
-    let responses
+    let query
     if (guestId) {
-      // Réponses pour un invité donné
-      responses = await db.collection("ceremony_responses").aggregate([
-        { $match: { guest_id: new ObjectId(guestId) } },
-        {
-          $lookup: {
-            from: "guests",
-            localField: "guest_id",
-            foreignField: "_id",
-            as: "guest"
-          }
-        },
-        { $unwind: "$guest" },
-        {
-          $project: {
-            ceremony_type: 1,
-            response: 1,
-            response_date: 1,
-            guest_name: "$guest.name",
-            guest_email: "$guest.email"
-          }
-        },
-        { $sort: { ceremony_type: 1 } }
-      ]).toArray()
+      query = sql`
+        SELECT cr.*, g.name as guest_name, g.email as guest_email
+        FROM ceremony_responses cr
+        JOIN guests g ON cr.guest_id = g.id
+        WHERE cr.guest_id = ${guestId}
+        ORDER BY cr.ceremony_type
+      `
     } else {
-      // Toutes les réponses
-      responses = await db.collection("ceremony_responses").aggregate([
-        {
-          $lookup: {
-            from: "guests",
-            localField: "guest_id",
-            foreignField: "_id",
-            as: "guest"
-          }
-        },
-        { $unwind: "$guest" },
-        {
-          $project: {
-            ceremony_type: 1,
-            response: 1,
-            response_date: 1,
-            guest_name: "$guest.name",
-            guest_email: "$guest.email"
-          }
-        },
-        { $sort: { guest_name: 1, ceremony_type: 1 } }
-      ]).toArray()
+      query = sql`
+        SELECT cr.*, g.name as guest_name, g.email as guest_email
+        FROM ceremony_responses cr
+        JOIN guests g ON cr.guest_id = g.id
+        ORDER BY g.name, cr.ceremony_type
+      `
     }
+
+    const responses = await query
 
     return NextResponse.json({ responses })
   } catch (error) {

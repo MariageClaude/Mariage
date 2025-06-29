@@ -1,11 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDb } from "@/lib/mongodb"
+import { sql } from "@/lib/database"
 import { sendEmail, generateInvitationEmail } from "@/lib/email"
-import { ObjectId } from "mongodb"
 
 export async function POST(request: NextRequest) {
   try {
-    const db = await getDb()
     const body = await request.json()
     const { guestId, guestIds } = body
 
@@ -21,12 +19,16 @@ export async function POST(request: NextRequest) {
     for (const id of targetGuestIds) {
       try {
         // Get guest details
-        const guest = await db.collection("guests").findOne({ _id: new ObjectId(id) })
+        const guests = await sql`
+          SELECT * FROM guests WHERE id = ${id}
+        `
 
-        if (!guest) {
+        if (guests.length === 0) {
           results.push({ guestId: id, success: false, error: "Guest not found" })
           continue
         }
+
+        const guest = guests[0]
 
         // Generate invitation email
         const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/guest/login`
@@ -42,27 +44,25 @@ export async function POST(request: NextRequest) {
 
         if (emailSent) {
           // Update guest invitation status
-          await db.collection("guests").updateOne(
-            { _id: guest._id },
-            { $set: { invitation_sent: true, invitation_sent_at: new Date() } }
-          )
+          await sql`
+            UPDATE guests 
+            SET invitation_sent = true, invitation_sent_at = CURRENT_TIMESTAMP
+            WHERE id = ${id}
+          `
 
           // Log invitation
-          await db.collection("invitations_log").insertOne({
-            guest_id: guest._id,
-            email_status: "sent",
-            sent_at: new Date(),
-          })
+          await sql`
+            INSERT INTO invitations_log (guest_id, email_status)
+            VALUES (${id}, 'sent')
+          `
 
           results.push({ guestId: id, success: true })
         } else {
           // Log failed invitation
-          await db.collection("invitations_log").insertOne({
-            guest_id: guest._id,
-            email_status: "failed",
-            error_message: "Email sending failed",
-            sent_at: new Date(),
-          })
+          await sql`
+            INSERT INTO invitations_log (guest_id, email_status, error_message)
+            VALUES (${id}, 'failed', 'Email sending failed')
+          `
 
           results.push({ guestId: id, success: false, error: "Email sending failed" })
         }
