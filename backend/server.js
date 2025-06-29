@@ -15,7 +15,6 @@ const corsOptions = {
   credentials: true, // si tu utilises les cookies ou sessions
 };
 
-app.use(cors(corsOptions));
 
 
 // Middleware

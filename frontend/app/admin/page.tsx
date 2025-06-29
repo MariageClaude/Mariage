@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const response = await fetch("https://mariageclaude-lqdj.onrender.com", {
+        const response = await fetch("https://mariageback.onrender.com/api/guests", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
