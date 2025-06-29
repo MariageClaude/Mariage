@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch("https://mariageback.onrender.com", {
+      const response = await fetch("https://mariageback.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

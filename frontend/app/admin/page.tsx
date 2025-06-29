@@ -88,7 +88,7 @@ export default function AdminDashboard() {
 
   const handleSendInvitation = async (guestId: string) => {
     try {
-      const response = await fetch(`https://mariageclaude-lqdj.onrender.com`, {
+      const response = await fetch(`https://mariageback.onrender.com/api/guests/${guestId}/send-invitation`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     try {
       console.log("ID de l'invité à supprimer :", guestId);
 
-      const response = await fetch(`https://mariageback.onrender.com`, {
+      const response = await fetch(`https://mariageback.onrender.com/api/guests/${guestId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
