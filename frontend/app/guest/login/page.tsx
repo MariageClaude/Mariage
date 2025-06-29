@@ -85,7 +85,7 @@ export default function GuestLogin() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Entrez votre nom"
+                    placeholder="Entrez votre nom et prénom"
                     required
                     className="border-cream-300 focus:border-sage-500"
                   />
