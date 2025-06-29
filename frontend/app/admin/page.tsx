@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     try {
       console.log("ID de l'invité à supprimer :", guestId);
 
-      const response = await fetch(`https://mariageclaude-lqdj.onrender.com`, {
+      const response = await fetch(`https://mariageback.onrender.com`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,

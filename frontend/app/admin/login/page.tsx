@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch("https://mariageclaude-lqdj.onrender.com", {
+      const response = await fetch("https://mariageback.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
