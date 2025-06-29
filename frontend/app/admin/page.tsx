@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/guests", {
+        const response = await fetch("https://mariageclaude-lqdj.onrender.com", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
 
   const handleSendInvitation = async (guestId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/guests/${guestId}/send-invitation`, {
+      const response = await fetch(`https://mariageclaude-lqdj.onrender.com`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     try {
       console.log("ID de l'invité à supprimer :", guestId);
 
-      const response = await fetch(`http://localhost:5000/api/guests/${guestId}`, {
+      const response = await fetch(`https://mariageclaude-lqdj.onrender.com`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,

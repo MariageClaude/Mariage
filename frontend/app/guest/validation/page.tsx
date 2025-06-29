@@ -53,7 +53,7 @@ export default function GuestValidation() {
         throw new Error("Guest ID not found");
       }
 
-      const response = await fetch(`http://localhost:5000/api/guests/${guestId}/responses`, {
+      const response = await fetch(`https://mariageclaude-lqdj.onrender.com`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

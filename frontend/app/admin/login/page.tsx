@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("https://mariageclaude-lqdj.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

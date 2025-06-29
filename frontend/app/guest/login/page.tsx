@@ -26,7 +26,7 @@ export default function GuestLogin() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/guests/login", {
+      const response = await fetch("https://mariageclaude-lqdj.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

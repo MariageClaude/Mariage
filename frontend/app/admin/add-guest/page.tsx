@@ -51,7 +51,7 @@ export default function AddGuestPage() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/guests");
+        const response = await fetch("https://mariageclaude-lqdj.onrender.com/api/guests");
         const guests = await response.json();
         setGuestList(guests);
       } catch (error) {
@@ -109,7 +109,7 @@ export default function AddGuestPage() {
 
       console.log("Données envoyées au backend :", guestData);
 
-      const response = await fetch("http://localhost:5000/api/guests", {
+      const response = await fetch("https://mariageclaude-lqdj.onrender.com/api/guests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
