@@ -24,7 +24,7 @@ export default function HomePage() {
           <p className="text-xl text-primary/70 max-w-2xl mx-auto drop-shadow-sm">
             Nous vous invitons à célébrer notre jour spécial avec nous
           </p>
-          <div className="mt-6 text-lg text-primary/80 font-medium">Aout 2025</div>
+          <div className="mt-6 text-lg text-primary/80 font-medium">Juillet 2025</div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -38,10 +38,6 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2 text-primary/80">
-                <li className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-primary" />
-                  Envoyer des invitations personnalisées
-                </li>
                 <li className="flex items-center">
                   <Users className="h-4 w-4 mr-2 text-primary" />
                   Gérer la liste des invités
@@ -71,11 +67,15 @@ export default function HomePage() {
               <ul className="space-y-2 text-primary/80">
                 <li className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-primary" />
-                  Cérémonie traditionnelle (DOT)
+                 Cérémonie civile
+                </li>
+                 <li className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-primary" />
+                 Benediction nuptiale
                 </li>
                 <li className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-primary" />
-                  Cérémonie civile
+                   Cérémonie traditionnelle (DOT)
                 </li>
                 <li className="flex items-center">
                   <Heart className="h-4 w-4 mr-2 text-primary" />
@@ -100,31 +100,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Video Instructions */}
-        <div className="mt-16 text-center">
-          <Card className="wedding-card max-w-2xl mx-auto">
-            <CardHeader>
-              <div className="flex items-center justify-center space-x-2">
-                <Play className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg text-primary">Configuration Vidéo de Fond</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-sm text-primary/80 space-y-2">
-              <p>Pour ajouter la belle vidéo de fond avec des fleurs blanches :</p>
-              <ol className="list-decimal list-inside space-y-1 text-left">
-                <li>Téléchargez la vidéo depuis le lien Pinterest</li>
-                <li>
-                  Enregistrez-la sous <code className="bg-primary/10 px-1 rounded">wedding-flowers.mp4</code> dans le
-                  dossier <code className="bg-primary/10 px-1 rounded">public/videos/</code>
-                </li>
-                <li>
-                  Mettez à jour le <code className="bg-primary/10 px-1 rounded">videoSrc</code> dans{" "}
-                  <code className="bg-primary/10 px-1 rounded">components/page-background.tsx</code>
-                </li>
-              </ol>
-            </CardContent>
-          </Card>
-        </div>
+       
       </div>
     </PageBackground>
   )

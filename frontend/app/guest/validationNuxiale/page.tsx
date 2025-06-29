@@ -118,9 +118,9 @@ export default function GuestValidation() {
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-6 w-6 text-sage-600" />
                   <div>
-                    <CardTitle className="text-2xl text-charcoal-800">Cérémonie Nuptiale </CardTitle>
+                    <CardTitle className="text-2xl text-charcoal-800">Bénédiction Nuptiale</CardTitle>
                     <CardDescription className="text-charcoal-600">
-                      Rejoignez-nous pour notre cérémonie Nuptiale
+                      Rejoignez-nous pour notre cérémonie de Bénédiction Nuptiale
                     </CardDescription>
                   </div>
                 </div>
@@ -168,13 +168,14 @@ export default function GuestValidation() {
                     className="space-y-3"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="attending" id="Night-yes" className="text-sage-600" />
+                      <RadioGroupItem value="attending" id="Night-yes" className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white" />
                       <Label htmlFor="dot-yes" className="cursor-pointer text-charcoal-700">
                         Oui, je serai présent(e)
                       </Label>
+
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="not-attending" id="Night-no" className="text-sage-600" />
+                      <RadioGroupItem value="not-attending" id="Night-no" className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white" />
                       <Label htmlFor="dot-no" className="cursor-pointer text-charcoal-700">
                         Désolé(e), je ne peux pas assister
                       </Label>
@@ -217,18 +218,21 @@ export default function GuestValidation() {
                     >
                       Modifier les Réponses
                     </Button>
-                    <Button
-                      onClick={handleLogout} // Logout functionality
-                      variant="outline"
-                      className="border-cream-300 text-charcoal-700 hover:bg-cream-50"
-                    >
-                      Se Déconnecter
-                    </Button>
+                    
                   </div>
                 </div>
               )}
             </div>
-            <Link href="/guest/validationdot" className="block">
+            <div className="text-center mt-8">
+                <Link href="/guest/validationdot" className="block">
+                  <Button
+                    className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
+                  >
+                    Aller à la page de cérémonie de la dot
+                  </Button>
+                </Link>
+              </div>
+            <Link href="/guest/validation" className="block">
               <Button
                   className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
                   >

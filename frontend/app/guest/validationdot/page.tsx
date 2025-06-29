@@ -34,12 +34,9 @@ export default function GuestValidation() {
     }
     setGuestName(name)
 
-    // Load existing responses if any
-    const savedResponses = localStorage.getItem("guestResponses")
-    if (savedResponses) {
-      setResponses(JSON.parse(savedResponses))
-      setIsSubmitted(false)
-    }
+    // Toujours démarrer avec aucun radio sélectionné
+    setResponses({ dot: "" })
+    setIsSubmitted(false)
   }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,17 +161,25 @@ export default function GuestValidation() {
                       onValueChange={(value) =>
                         setResponses({ ...responses, dot: value as "attending" | "not-attending" })
                       }
-                      disabled={isSubmitted} // Disable the input if responses are submitted
+                      disabled={isSubmitted}
                       className="space-y-3"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="attending" id="dot-yes" className="text-sage-600" />
+                        <RadioGroupItem
+                          value="attending"
+                          id="dot-yes"
+                          className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white"
+                        />
                         <Label htmlFor="dot-yes" className="cursor-pointer text-charcoal-700">
                           Oui, je serai présent(e)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="not-attending" id="dot-no" className="text-sage-600" />
+                        <RadioGroupItem
+                          value="not-attending"
+                          id="dot-no"
+                          className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white"
+                        />
                         <Label htmlFor="dot-no" className="cursor-pointer text-charcoal-700">
                           Désolé(e), je ne peux pas assister
                         </Label>
@@ -217,21 +222,19 @@ export default function GuestValidation() {
                       >
                         Modifier les Réponses
                       </Button>
-                     
+                     <Button
+                      onClick={handleLogout} // Logout functionality
+                      variant="outline"
+                      className="border-cream-300 text-charcoal-700 hover:bg-cream-50"
+                    >
+                      Se Déconnecter
+                    </Button>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="text-center mt-8">
-                <Link href="/guest/validationNuxiale" className="block">
-                  <Button
-                    className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
-                  >
-                    Aller à la page de cérémonie nuptiale
-                  </Button>
-                </Link>
-              </div>
-              <Link href="/guest/validation" className="block">
+              
+              <Link href="/guest/validationNuxiale" className="block">
                 <Button
                   className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg"
                 >

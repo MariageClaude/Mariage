@@ -60,10 +60,11 @@ export default function GuestLogin() {
             <Link href="/" className="inline-block">
               <Heart className="h-12 w-12 text-sage-600 mx-auto mb-4" />
             </Link>
-            <h1 className="text-3xl font-bold text-charcoal-800 mb-2 wedding-title">Bienvenue Invité(e)</h1>
+            
           </div>
 
           <Card className="wedding-card shadow-lg">
+            <h1 className="text-3xl font-bold text-charcoal-800 mb-2 wedding-title">Bienvenue</h1>
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-cream-100 rounded-full flex items-center justify-center mb-4">
                 <Lock className="h-6 w-6 text-sage-600" />

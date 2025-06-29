@@ -164,16 +164,6 @@ export default function AdminDashboard() {
           </Card>
           <Card className="wedding-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Cérémonie DOTE</CardTitle>
-              <Calendar className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.dotAttending}</div>
-              <p className="text-xs text-primary/70">présents</p>
-            </CardContent>
-          </Card>
-          <Card className="wedding-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-primary">Cérémonie Civile</CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
@@ -182,9 +172,9 @@ export default function AdminDashboard() {
               <p className="text-xs text-primary/70">présents</p>
             </CardContent>
           </Card>
-          <Card className="wedding-card">
+           <Card className="wedding-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Cérémonie nuxiale</CardTitle>
+              <CardTitle className="text-sm font-medium text-primary">Benediction nuptiale</CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -192,6 +182,17 @@ export default function AdminDashboard() {
               <p className="text-xs text-primary/70">présents</p>
             </CardContent>
           </Card>
+          <Card className="wedding-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Cérémonie DOT</CardTitle>
+              <Calendar className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.dotAttending}</div>
+              <p className="text-xs text-primary/70">présents</p>
+            </CardContent>
+          </Card>
+         
         </div>
 
         <Tabs defaultValue="guests" className="space-y-6">
@@ -217,9 +218,9 @@ export default function AdminDashboard() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-primary">Nom</TableHead>
-                        <TableHead className="text-primary">Réponse DOT</TableHead>
-                        <TableHead className="text-primary">Réponse Civile</TableHead>
-                        <TableHead className="text-primary">Réponse Céremonie de nuit</TableHead>
+                        <TableHead className="text-primary">Réponse Cérémonie Civile</TableHead>
+                        <TableHead className="text-primary">Réponse Benediction Nuptiale</TableHead>
+                        <TableHead className="text-primary">Réponse Cérémonie Traditionnelle</TableHead>
                         <TableHead className="text-primary">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -227,9 +228,9 @@ export default function AdminDashboard() {
                       {guests.map((guest) => (
                         <TableRow key={guest.id}>
                           <TableCell className="font-medium text-primary">{guest.name}</TableCell>
-                          <TableCell>{getResponseBadge(guest.dotResponse)}</TableCell>
                           <TableCell>{getResponseBadge(guest.civilResponse)}</TableCell>
                           <TableCell>{getResponseBadge(guest.NightResponse)}</TableCell>
+                          <TableCell>{getResponseBadge(guest.dotResponse)}</TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
                               <Button

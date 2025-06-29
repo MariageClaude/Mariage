@@ -35,12 +35,9 @@ export default function GuestValidation() {
     }
     setGuestName(name)
 
-    // Load existing responses if any
-    const savedResponses = localStorage.getItem("guestResponses")
-    if (savedResponses) {
-      setResponses(JSON.parse(savedResponses))
-      setIsSubmitted(false)
-    }
+    // Pour ne rien pré-sélectionner à chaque chargement :
+    setResponses({ civil: "" })
+    setIsSubmitted(false)
   }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +150,7 @@ export default function GuestValidation() {
                       <div className="flex items-center space-x-2">
                         <MapPin className="h-4 w-4 text-charcoal-500" />
                         <span className="font-semibold text-charcoal-700">Lieu :</span>
-                        <span className="text-charcoal-700">Mairie de bandjoun</span>
+                        <span className="text-charcoal-700">Mairie de Bandjoun</span>
                       </div>
                     </div>
                     <div className="bg-cream-50 p-4 rounded-lg border border-cream-200">
@@ -179,16 +176,24 @@ export default function GuestValidation() {
                       className="space-y-3"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="attending" id="civil-yes" className="text-sage-600" />
-                        <Label htmlFor="civil-yes" className="cursor-pointer text-charcoal-700">
-                          Oui, je serai présent(e)
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="not-attending" id="civil-no" className="text-sage-600" />
-                        <Label htmlFor="civil-no" className="cursor-pointer text-charcoal-700">
-                          Désolé(e), je ne peux pas assister
-                        </Label>
+                        <RadioGroupItem
+                        value="attending"
+                        id="civil-yes"
+                        className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white"
+                      />
+                      <Label htmlFor="civil-yes" className="cursor-pointer text-charcoal-700">
+                        Oui, je serai présent(e)
+                      </Label>
+                     </div>
+                     <div className="flex items-center space-x-2">
+                       <RadioGroupItem
+                        value="not-attending"
+                        id="civil-no"
+                        className="text-sage-600 data-[state=unchecked]:border-gray-400 data-[state=unchecked]:bg-white"
+                      />
+                      <Label htmlFor="civil-no" className="cursor-pointer text-charcoal-700">
+                        Désolé(e), je ne peux pas assister
+                      </Label>
                       </div>
                     </RadioGroup>
                     {responses.civil && (
@@ -234,9 +239,9 @@ export default function GuestValidation() {
 
               {/* Responsive Link Button */}
               <div className="text-center mt-8">
-                <Link href="/guest/validationdot" className="block">
+                <Link href="/guest/validationNuxiale" className="block">
                   <Button className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg">
-                    Aller à la page DOT
+                    Aller à la page de Benediction Nuptiale
                   </Button>
                 </Link>
               </div>
