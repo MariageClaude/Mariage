@@ -117,7 +117,7 @@ export default function GuestValidation() {
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Civil Wedding Ceremony */}
-              <Card className="wedding-card shadow-lg">
+              <Card className="wedding-card shadow-lg bg-white/40">
                 <CardHeader>
                   <div className="flex items-center space-x-3">
                     <Heart className="h-6 w-6 text-sage-600" />
