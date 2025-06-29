@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
   const { name, password } = req.body;
 
   try {
-    if (password !== "claude2025") {
+    if (password !== "claude&cedric") {
       return res.status(401).json({ error: 'Mot de passe incorrect' });
     }
 

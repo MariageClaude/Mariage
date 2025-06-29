@@ -96,7 +96,6 @@ export default function GuestValidation() {
             <div className="text-center mb-8">
               <Heart className="h-16 w-16 text-sage-600 mx-auto mb-4" />
               <h1 className="text-4xl font-bold text-charcoal-800 mb-2 wedding-title" style={{ color: '#000000', fontStyle: 'Bold' }}>Bienvenue, {guestName} !</h1>
-              <p className="text-4xl font-bold text-charcoal-800 mb-2 wedding-title" style={{ color: '#000000', fontStyle: 'Bold', fontSize: '20px' }}>Veuillez confirmer votre présence pour notre jour spécial</p>
             </div>
 
             {isSubmitted && (

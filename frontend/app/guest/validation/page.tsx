@@ -102,12 +102,7 @@ export default function GuestValidation() {
               >
                 Bienvenue, {guestName} !
               </h1>
-              <p
-                className="text-lg sm:text-xl md:text-2xl font-bold mb-2 wedding-title text-charcoal-800"
-                style={{ fontStyle: "Bold" }}
-              >
-                Veuillez confirmer votre présence pour notre jour spécial
-              </p>
+              
             </div>
 
             {/* Alert */}
