@@ -147,7 +147,7 @@ export default function GuestValidation() {
                   <div className="bg-cream-50 p-4 rounded-lg border border-cream-200">
                     <h4 className="font-semibold text-charcoal-800 mb-2">À quoi s'attendre :</h4>
                     <ul className="text-sm text-charcoal-700 space-y-1">
-                      <li>• Benediction du couple</li>
+                      <li>• Bénédiction du couple</li>
                       <li>• Séance photos</li>
                       <li>• Réception</li>
                     
@@ -157,7 +157,7 @@ export default function GuestValidation() {
 
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-charcoal-700">
-                    Assisterez-vous à la Soirée ?
+                    Assisterez-vous à la Bénédiction Nuptiale ?
                   </Label>
                   <RadioGroup
                     value={responses.Night}

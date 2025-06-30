@@ -145,7 +145,6 @@ export default function GuestValidation() {
                       <h4 className="font-semibold text-charcoal-800 mb-2">À quoi s'attendre :</h4>
                       <ul className="text-sm text-charcoal-700 space-y-1">
                         <li>• Rituels de mariage traditionnels</li>
-                        <li>• Spectacles culturels</li>
                         <li>• Tenue traditionnelle recommandée</li>
                         <li>• Reception</li>
                       </ul>
